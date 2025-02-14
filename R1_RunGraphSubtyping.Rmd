@@ -1,0 +1,117 @@
+---
+title: "Publication"
+output: html_document
+date: '2024-08-21'
+---
+
+```{r}
+source("scripts.R")
+source("GraphSubtyping.R")
+```
+
+```{r}
+PCG_and_lnc_ids=readRDS("PCG_and_lnc_ids.rds")
+PCG_ids=readRDS("PCG_ids.rds")
+correctedTPM=readRDS("correctedTPM.Sep25th.rds")
+patient_info_df=read.csv("patient_info_df.240429.csv",row.names = 1)
+```
+
+```{r}
+resolutions=seq(0.5,1.5,0.1)
+```
+
+
+# Level1
+```{r,fig.width=6,fig.height=2}
+super_HVG=output_HVG_mtx(correctedTPM[,patient_info_df$SampleID],top_N = 2000,gene_filter = PCG_and_lnc_ids)
+
+superSubtype_candidates=lapply(resolutions, function(r){
+  return(run_GraphCluster(super_HVG,r = r))
+})
+
+superSubtype_candidates_sil=lapply(superSubtype_candidates, cal_median_silhouette,m=super_HVG) %>% unlist %>% setNames(resolutions)
+superSubtype_candidates_ch=lapply(superSubtype_candidates, cal_calinhara,m=super_HVG) %>% unlist %>% setNames(resolutions)
+superSubtype_candidates_clusterNum=setNames(unlist(lapply(lapply(superSubtype_candidates, unique),length)),resolutions)
+
+
+superSubtype_candidates_sil_p=plot_cluster_metrics_score(x = superSubtype_candidates_sil,xlab_title = "resolution",
+                                                         ylab_title = "median silhouette widths",plot_title = "")
+superSubtype_candidates_ch_p=plot_cluster_metrics_score(x = superSubtype_candidates_ch,xlab_title = "resolution",
+                                                        ylab_title = "Calinski-Harabasz Index",plot_title = "")
+superSubtype_candidates_clusterNum_p=plot_cluster_metrics_score(x = superSubtype_candidates_clusterNum,xlab_title = "resolution",
+                                                        ylab_title = "Cluster num",plot_title = "")
+ggarrange(superSubtype_candidates_ch_p,superSubtype_candidates_sil_p,superSubtype_candidates_clusterNum_p,ncol = 3)
+
+superSubtype=run_GraphCluster(super_HVG,r = 0.8,k =20)
+saveRDS(superSubtype,"superSubtype.rds")
+```
+
+
+```{r}
+split_samples=split(names(superSubtype),superSubtype)
+```
+
+
+# Level2 
+
+# Level2_0
+```{r,fig.width=6,fig.height=2}
+C0_HVG=output_HVG_mtx(correctedTPM[,split_samples[[1]]],top_N = 1200,gene_filter = PCG_ids)
+
+C0Subtype_candidates=lapply(resolutions, function(r){
+  return(run_GraphCluster(C0_HVG,r = r))
+})
+
+
+
+C0Subtype_candidates_sil=lapply(C0Subtype_candidates, cal_median_silhouette,m=C0_HVG) %>% unlist %>% setNames(resolutions)
+C0Subtype_candidates_ch=lapply(C0Subtype_candidates, cal_calinhara,m=C0_HVG) %>% unlist %>% setNames(resolutions)
+C0Subtype_candidates_clusterNum=setNames(unlist(lapply(lapply(C0Subtype_candidates, unique),length)),resolutions)
+
+C0Subtype_candidates_sil_p=plot_cluster_metrics_score(x = C0Subtype_candidates_sil,xlab_title = "resolution",
+                                                         ylab_title = "median silhouette widths",plot_title = "")
+C0Subtype_candidates_ch_p=plot_cluster_metrics_score(x = C0Subtype_candidates_ch,xlab_title = "resolution",
+                                                        ylab_title = "Calinski-Harabasz Index",plot_title = "")
+C0Subtype_candidates_clusterNum_p=plot_cluster_metrics_score(x = C0Subtype_candidates_clusterNum,xlab_title = "resolution",
+                                                        ylab_title = "Cluster num",plot_title = "")
+ggarrange(C0Subtype_candidates_ch_p,C0Subtype_candidates_sil_p,C0Subtype_candidates_clusterNum_p,ncol = 3)
+
+```
+
+
+
+```{r,fig.width=6,fig.height=2}
+C1_HVG=output_HVG_mtx(correctedTPM[,split_samples[[2]]],top_N = 1800,gene_filter = PCG_ids)
+
+C1Subtype_candidates=lapply(resolutions, function(r){
+  return(run_GraphCluster(C1_HVG,r = r))
+})
+
+lapply(lapply(C1Subtype_candidates, unique),length)
+
+C1Subtype_candidates_sil=lapply(C1Subtype_candidates, cal_median_silhouette,m=C1_HVG) %>% unlist %>% setNames(resolutions)
+C1Subtype_candidates_ch=lapply(C1Subtype_candidates, cal_calinhara,m=C1_HVG) %>% unlist %>% setNames(resolutions)
+C1Subtype_candidates_clusterNum=setNames(unlist(lapply(lapply(C1Subtype_candidates, unique),length)),resolutions)
+
+
+C1Subtype_candidates_sil_p=plot_cluster_metrics_score(x = C1Subtype_candidates_sil,xlab_title = "resolution",
+                                                         ylab_title = "median silhouette widths",plot_title = "")
+C1Subtype_candidates_ch_p=plot_cluster_metrics_score(x = C1Subtype_candidates_ch,xlab_title = "resolution",
+                                                        ylab_title = "Calinski-Harabasz Index",plot_title = "")
+C1Subtype_candidates_clusterNum_p=plot_cluster_metrics_score(x = C1Subtype_candidates_clusterNum,xlab_title = "resolution",
+                                                        ylab_title = "Cluster num",plot_title = "")
+ggarrange(C1Subtype_candidates_ch_p,C1Subtype_candidates_sil_p,C1Subtype_candidates_clusterNum_p,ncol = 3)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
