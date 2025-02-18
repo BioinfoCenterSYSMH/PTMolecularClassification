@@ -1,3 +1,5 @@
+# color setting
+library(paletteer)
 
 PT_Pallette <- list(
   Colors = c("#AA4643", "#4572A7", "#89A54E", "#71588F", "#4198AF", "#DB843D",
@@ -27,4 +29,3 @@ PT_Pallette$Mut=setNames(c("lightgrey","steelblue"),c("Wildtype","Mut"))
 PT_Pallette$Survival=setNames(c("gray40","#225EA8", "#EC7014", "#6A51A3" ,"#CB181D"),c("No","R","M-R","D-M","D-M-R"))
 PT_Pallette$Progress=setNames(c("lightgrey","#225EA8", "#EC7014", "#6A51A3" ,"#CB181D"),c("No","R","M-R","D-M","D-M-R"))
 
-library(paletteer)
